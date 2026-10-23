@@ -19,7 +19,6 @@ class Task(db.Model):
 
     @classmethod
     def from_dict(cls, task_data):
-<<<<<<< HEAD
         return cls(
         title=task_data["title"],
         description=task_data["description"],
@@ -27,15 +26,4 @@ class Task(db.Model):
     )
 
         
-=======
-        if "title" not in task_data:
-            raise KeyError("title")
-        if "description" not in task_data:
-            raise KeyError("description")
-
-        return cls(
-            title=task_data["title"],
-            description=task_data["description"],
-            completed_at=task_data.get("completed_at"),
-        )
->>>>>>> 5b65398d079d58ae4ed6876b4acd3297ea7a1450
+        
