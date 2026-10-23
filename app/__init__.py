@@ -3,7 +3,7 @@ from .db import db, migrate
 from app.models.task import Task
 import os
 from app.routes.task_routes import tasks_bp
-from app.routes.goal_routes import goals_bp
+#from app.routes.goal_routes import goals_bp
 
 def create_app(config=None):
     app = Flask(__name__)
