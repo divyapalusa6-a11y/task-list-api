@@ -7,7 +7,7 @@ import os
 
 
 tasks_bp = Blueprint("tasks_bp", __name__,url_prefix="/tasks" )
-
+SLACK_CHANNEL = "task-notifications-c26"
 def get_task_or_404(task_id):
     task = db.session.get(Task, task_id)
     if task is None:
@@ -110,32 +110,20 @@ def mark_complete(task_id):
     if task.completed_at is None:
         task.completed_at = datetime.now(timezone.utc)
         db.session.commit()
-
-    # Get the Slack token from the environment
-    slack_token = os.environ.get("slack_token")
-    slack_channel = os.environ.get(
-        "slack_channel", "task-notifications-c26"
-    )
-
-    # Prepare the Slack API request
-    headers = {
-        "Authorization": f"Bearer {slack_token}",
-        "Content-Type": "application/json"
-    }
-
-    message = {
-        "channel": slack_channel,
-        "text": f"Divya just completed the task {task.title}"
-    }
-
-    # Send the notification to Slack
-    requests.post(
-        "https://slack.com/api/chat.postMessage",
-        headers=headers,
-        json=message
-    )
+        slack_send_mark_complete(task_id)
 
     return "", 204
+
+
+def slack_send_mark_complete(task_id):
+    slack_token = os.environ.get('SLACK_BOT_TOKEN')
+    url = 'https://slack.com/api/chat.postMessage'
+    headers = {"Authorization": f"Bearer {slack_token}"}
+    request_body = {
+        "channel": "task-notifications-c26",
+        "text": f"Someone just completed the task {task_id}"
+    }
+    requests.post(url, headers=headers, json=request_body)
 
 @tasks_bp.route("/<int:task_id>/mark_incomplete", methods=["PATCH"])
 def mark_incomplete(task_id):
