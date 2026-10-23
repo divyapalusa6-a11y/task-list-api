@@ -5,9 +5,11 @@ import pytest
 #@pytest.mark.skip(reason="No way to test this feature yet")
 def test_task_to_dict():
     #Arrange
-    new_task = Task(id = 1, title="Make My Bed", 
-                    description="Start the day off right!", 
-                    completed_at=None)
+    new_task = Task()
+    new_task.id = 1
+    new_task.title = "Make My Bed"
+    new_task.description = "Start the day off right!"
+    new_task.completed_at = None
     
     #Act
     task_dict = new_task.to_dict()
@@ -22,9 +24,10 @@ def test_task_to_dict():
 #@pytest.mark.skip(reason="No way to test this feature yet")
 def test_task_to_dict_missing_id():
     #Arrange
-    new_task = Task(title="Make My Bed", 
-                    description="Start the day off right!", 
-                    completed_at=None)
+    new_task = Task()
+    new_task.title = "Make My Bed"
+    new_task.description = "Start the day off right!"
+    new_task.completed_at = None
     
     #Act
     task_dict = new_task.to_dict()
@@ -39,9 +42,10 @@ def test_task_to_dict_missing_id():
 #@pytest.mark.skip(reason="No way to test this feature yet")
 def test_task_to_dict_missing_title():
     #Arrange
-    new_task = Task(id = 1,
-                    description="Start the day off right!", 
-                    completed_at=None)
+    new_task = Task()
+    new_task.id = 1
+    new_task.description = "Start the day off right!"
+    new_task.completed_at = None
     
     #Act
     task_dict = new_task.to_dict()
@@ -148,7 +152,7 @@ def test_get_task_not_found(client):
 
     # Assert
     assert response.status_code == 404
-    assert response_body == {"message": "Task with id (1)not found."}
+    assert response_body == {"message": "Task with id (1) not found."}
 
     
     #raise Exception("Complete test with assertion about response body")
@@ -215,7 +219,7 @@ def test_update_task_not_found(client):
     # Assert
     assert response.status_code == 404
     assert response_body == {
-        "message": "Task with id (1)not found."
+        "message": "Task with id (1) not found."
     }
     #raise Exception("Complete test with assertion about response body")
     # *****************************************************************
@@ -250,7 +254,7 @@ def test_delete_task_not_found(client):
 
     assert db.session.scalars(db.select(Task)).all() == []
     assert response_body == {
-        "message": "Task with id (1)not found."
+        "message": "Task with id (1) not found."
     }
 
 #@pytest.mark.skip(reason="No way to test this feature yet")
@@ -262,23 +266,24 @@ def test_create_task_must_contain_title(client):
     response_body = response.get_json()
 
     # Assert
+    assert db.session.scalars(db.select(Task)).all() == []
     assert response.status_code == 400
     assert "message" in response_body
     assert response_body == {
         "message": "Invalid data"
     }
-    assert db.session.scalars(db.select(Task)).all() == []
-
 
 #@pytest.mark.skip(reason="No way to test this feature yet")
 def test_create_task_must_contain_description(client):
-    # Act
     response = client.post("/tasks", json={
         "title": "A Brand New Task"
     })
+
     response_body = response.get_json()
 
-    # Assert
+    print("Status Code:", response.status_code)
+    print("Response Body:", response_body)
+
     assert response.status_code == 400
     assert "message" in response_body
     assert response_body == {

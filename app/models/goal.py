@@ -1,19 +1,25 @@
-# from sqlalchemy.orm import Mapped, mapped_column, relationship
-# from ..db import db
-# from ..models.task import Task
+from typing import TYPE_CHECKING
 
-# class Goal(db.Model):
-#     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-#     title: Mapped[str]
-#     tasks: Mapped[list["Task"]] = relationship(back_populates="goal")
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from ..db import db
 
-#     def to_dict(self):
-#         return {
-#             "id": self.id,
-#             "title": self.title
-#         }
+if TYPE_CHECKING:
+    from ..models.task import Task
+
+class Goal(db.Model):
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    title: Mapped[str]
+    tasks: Mapped[list["Task"]] = relationship(back_populates="goal")
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "title": self.title
+        }
     
-#     @classmethod
-#     def from_dict(cls, goal_data):
-#         new_goal = cls(title=goal_data["title"])
-#         return new_goal
+    @classmethod
+    def from_dict(cls, goal_data):
+        goal = cls()
+        goal.title = goal_data["title"]
+        return goal
+        

@@ -1,14 +1,20 @@
-import pytest
+import pytest  # type: ignore[reportMissingImports]
 from app import create_app
 from app.db import db
-from flask.signals import request_finished
-from dotenv import load_dotenv
+from flask import request_finished  # type: ignore[reportMissingImports]
+try:
+    from importlib import import_module
+
+    load_dotenv = import_module("dotenv").load_dotenv
+except ImportError:
+    load_dotenv = None
 import os
 from app.models.task import Task
 from app.models.goal import Goal
 from datetime import datetime
 
-load_dotenv()
+if load_dotenv is not None:
+    load_dotenv()
 
 @pytest.fixture
 def app():
@@ -42,9 +48,10 @@ def client(app):
 # This fixture creates a task and saves it in the database
 @pytest.fixture
 def one_task(app):
-    new_task = Task(title="Go on my daily walk 🏞", 
-                    description="Notice something new every day", 
-                    completed_at=None)
+    new_task = Task()
+    new_task.title = "Go on my daily walk 🏞"
+    new_task.description = "Notice something new every day"
+    new_task.completed_at = None
     db.session.add(new_task)
     db.session.commit()
     return new_task
@@ -55,29 +62,27 @@ def one_task(app):
 # them in the database
 @pytest.fixture
 def three_tasks(app):
-    db.session.add_all([
-        Task(title="Water the garden 🌷", 
-            description="", 
-            completed_at=None),
-        Task(title="Answer forgotten email 📧", 
-            description="", 
-            completed_at=None),
-        Task(title="Pay my outstanding tickets 😭", 
-            description="", 
-            completed_at=None)
-    ])
+    tasks = []
+    for title in [
+        "Water the garden 🌷",
+        "Answer forgotten email 📧",
+        "Pay my outstanding tickets 😭",
+    ]:
+        task = Task()
+        task.title = title
+        task.description = ""
+        task.completed_at = None
+        tasks.append(task)
+
+    db.session.add_all(tasks)
     db.session.commit()
 
-
-# This fixture gets called in every test that
-# references "completed_task"
-# This fixture creates a task with a
-# valid completed_at date
 @pytest.fixture
 def completed_task(app):
-    new_task = Task(title="Go on my daily walk 🏞", 
-                    description="Notice something new every day", 
-                    completed_at=datetime.now())
+    new_task = Task()
+    new_task.title = "Go on my daily walk 🏞"
+    new_task.description = "Notice something new every day"
+    new_task.completed_at = datetime.now()
     db.session.add(new_task)
     db.session.commit()
     return new_task
@@ -87,7 +92,8 @@ def completed_task(app):
 # This fixture creates a goal and saves it in the database
 @pytest.fixture
 def one_goal(app):
-    new_goal = Goal(title="Build a habit of going outside daily")
+    new_goal = Goal()
+    new_goal.title = "Build a habit of going outside daily"
     db.session.add(new_goal)
     db.session.commit()
 
