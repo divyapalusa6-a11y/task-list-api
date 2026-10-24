@@ -1,5 +1,5 @@
 # pyright: reportMissingImports=false
-from ..routes.routes_utilities import validate_model, create_model, get_models_with_filters
+from ..routes.routes_utilities import validate_model, get_models_with_filters, create_model
 from flask import Blueprint, make_response, request, Response
 from ..models.goal import Goal
 from ..models.task import Task
@@ -7,9 +7,13 @@ from ..db import db
 
 goals_bp = Blueprint("goals_bp", __name__, url_prefix="/goals")
 
+
 @goals_bp.post("")
-def create_goal():    
-    request_body = request.get_json()    
+def create_goal():
+    request_body = request.get_json()
+
+    if not isinstance(request_body, dict) or "title" not in request_body:
+        return {"message": "Invalid request: missing title"}, 400
     return create_model(Goal, request_body)
 
 @goals_bp.post("/<id>/tasks")
@@ -27,8 +31,8 @@ def create_task_with_goal_id(id):
         "id": goal.id,
         "task_ids": [task.id for task in goal.tasks]
     }
-    return make_response(create_model(Task, response_body), 200)
-    
+    #return make_response(create_model(Task, response_body), 200)
+    return make_response(response_body, 200)
 @goals_bp.get("")
 def get_all_goals():    
     return get_models_with_filters(Goal, request.args)
@@ -39,15 +43,16 @@ def get_goal(id):
     return goal.to_dict()
 
 @goals_bp.get("/<id>/tasks")
-def get_all_goal_tasks(id):    
-    goal = validate_model(Goal, id)    
-    tasks = [task.to_dict() for task in goal.tasks]    
-    response_body = {        
-        "id": goal.id,        
-        "title": goal.title,       
-        "tasks": tasks   
-        }
-    return Response(response_body ,status=200, mimetype="application/json") 
+def get_all_goal_tasks(id):
+    goal = validate_model(Goal, id)
+
+    response_body = {
+        "id": goal.id,
+        "title": goal.title,
+        "tasks": [task.to_dict() for task in goal.tasks]
+    }
+
+    return response_body, 200
 
 @goals_bp.put("/<id>")
 def replace_goal(id):    

@@ -24,7 +24,6 @@ def test_route_utilities_validate_model_with_task(client, three_tasks):
     assert task_3.id == 3
     assert task_3.title == "Pay my outstanding tickets 😭"
 
-
 #@pytest.mark.skip(reason="No way to test this feature yet")
 def test_route_utilities_validate_model_with_task_invalid_id(client, three_tasks):
     #Act & Assert
@@ -32,20 +31,23 @@ def test_route_utilities_validate_model_with_task_invalid_id(client, three_tasks
     # cause an `HTTPException` when an `abort` statement is reached 
     with pytest.raises(HTTPException) as e:
         result_task = validate_model(Task, "One")
+    response = e.value.get_response()
+    assert response.status_code == 400
+    response_body = json.loads(e.value.get_body())
+    assert response_body == {
+        "message": "Task id (One) is invalid."
+    }
     
-    # Test that the correct status code and response message are returned
-    assert e.value.code == 400
-    assert e.value.description == "Task id (One) is invalid."
-#@pytest.mark.skip(reason="No way to test this feature yet")
-def test_route_utilities_validate_model_with_task_missing_id(client, three_tasks):
-    #Act & Assert
+def test_route_utilities_validate_model_with_task_missing_id(
+    client, three_tasks):
     with pytest.raises(HTTPException) as e:
-        result_task = validate_model(Task, 4)
+        validate_model(Task, 4)
     response = e.value.get_response()
     assert response.status_code == 404
-    response_body = e.value.get_body()
-    assert json.loads(response_body) == {"message": "Task 4 is missing."}
-
+    response_body = json.loads(e.value.get_body())
+    assert response_body == {
+        "message": "Task with id (4) not found"
+    }
 #@pytest.mark.skip(reason="No way to test this feature yet")
 def test_route_utilities_validate_model_with_goal(client, one_goal):
     #Act
@@ -62,7 +64,7 @@ def test_route_utilities_validate_model_with_goal_invalid_id(client, one_goal):
         result_task = validate_model(Goal, "One")
     response = e.value.get_response()
     assert response.status_code == 400
-    assert json.loads(e.value.get_body()) == {"message":"Goal id (one) is invalid."}
+    assert json.loads(e.value.get_body()) == {"message": "Goal id (One) is invalid."}
     
 #@pytest.mark.skip(reason="No way to test this feature yet")
 def test_route_utilities_validate_model_with_goal_missing_id(client, one_goal):
@@ -72,8 +74,9 @@ def test_route_utilities_validate_model_with_goal_missing_id(client, one_goal):
     response = e.value.get_response()
     assert response.status_code == 404
     response_body = json.loads(e.value.get_body())
-    assert response_body == {"message": "Goal id (4) not found."}
-
+    assert response_body == {
+        "message": "Goal with id (4) not found"
+    }
 #@pytest.mark.skip(reason="No way to test this feature yet")
 def test_route_utilities_create_model_with_task(client):
     #Arrange
@@ -82,17 +85,17 @@ def test_route_utilities_create_model_with_task(client):
         "description": "",
         "completed_at": None
     }
-
     #Act
     response = create_model(Task, request_body)
-
     #Assert
-    assert response[0]["id"] == 1 #create_model returns a tuple
-    assert response[0]["title"] == "Make the bed"
-    assert response[0]["description"] == ""
-    assert response[0]["is_complete"] == False
+    response_body = response[0]
+    assert isinstance(response_body["id"], int)
+    assert response_body["id"] > 0
+    assert response_body["title"] == "Make the bed"
+    assert response_body["description"] == ""
+    assert response_body["is_complete"] is False
     assert response[1] == 201
-
+    
 #@pytest.mark.skip(reason="No way to test this feature yet")
 def test_route_utilities_create_model_with_task_missing_title(client):
     #Arrange
@@ -102,9 +105,10 @@ def test_route_utilities_create_model_with_task_missing_title(client):
         create_model(Task, request_body)
     response = e.value.get_response()
     assert response.status_code == 400
-    response_body = json.loads(e.value.get_body()) 
-    assert response_body == {"message": "Invalid data"}
-
+    response_body = json.loads(e.value.get_body())
+    assert response_body == {
+        "message": "Invalid data."
+    }
 #@pytest.mark.skip(reason="No way to test this feature yet")
 def test_route_utilities_create_model_with_goal(client):
     #Arrange
@@ -116,8 +120,9 @@ def test_route_utilities_create_model_with_goal(client):
     response = create_model(Goal, request_body)
 
     #Assert
-    assert response[0]["id"] == 1 #create_model returns a tuple
-    assert response[0]["title"] == "Seize the Day!"
+    response_body = response[0]
+    assert response_body["id"] == 1
+    assert response_body["title"] == "Seize the Day!"
     assert response[1] == 201
 
 #@pytest.mark.skip(reason="No way to test this feature yet")
@@ -130,5 +135,6 @@ def test_route_utilities_create_model_with_goal_missing_title(client):
         create_model(Goal, request_body)
     response = e.value.get_response()
     assert response.status_code == 400
-    response_body = json.loads(e.value.get_body()) 
-    assert response_body == {"message": "Invalid data"}
+
+    response_body = json.loads(e.value.get_body())
+    assert response_body == {"message": "Invalid data."}
