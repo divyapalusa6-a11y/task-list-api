@@ -22,7 +22,6 @@ def test_post_task_ids_to_goal(client, one_goal, three_tasks):
     query = db.select(Goal).where(Goal.id == 1)
     assert len(db.session.scalar(query).tasks) == 3
 
-
 #@pytest.mark.skip(reason="No way to test this feature yet")
 def test_post_task_ids_to_goal_overwrites_existing_tasks(client, one_task_belongs_to_one_goal, three_tasks):
     # Act
@@ -30,7 +29,6 @@ def test_post_task_ids_to_goal_overwrites_existing_tasks(client, one_task_belong
         "task_ids": [2, 4]
     })
     response_body = response.get_json()
-
     # Assert
     assert response.status_code == 200
     assert "id" in response_body
